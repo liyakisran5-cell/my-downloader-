@@ -6,84 +6,58 @@ export default async function handler(req, res) {
   const { url: videoUrl } = req.query;
   if (!videoUrl) return res.status(400).json({ success: false, message: "URL missing" });
 
-  const apis = [
-    () => tryCobalt(videoUrl),
-    () => tryYtApi(videoUrl),
-    () => tryFallback(videoUrl),
-  ];
+  try {
+    const result = await tryYoutubeDownloader(videoUrl);
+    if (result) return res.status(200).json({ success: true, mediaInfo: result });
+    throw new Error("No result");
+  } catch (e) {
+    return res.status(503).json({ success: false, message: "Error: " + e.message });
+  }
+}
 
-  for (const api of apis) {
-    try {
-      const result = await api();
-      if (result) return res.status(200).json({ success: true, mediaInfo: result });
-    } catch (e) {
-      console.log("API failed:", e.message);
+async function tryYoutubeDownloader(url) {
+  const apiUrl = "https://youtube-video-and-shorts-downloader.p.rapidapi.com/download?url=" + encodeURIComponent(url);
+
+  const res = await fetch(apiUrl, {
+    method: "GET",
+    headers: {
+      "x-rapidapi-key": "8573c3a5a4msh17b0edce5836123p15a406jsnf2cf5e558202",
+      "x-rapidapi-host": "youtube-video-and-shorts-downloader.p.rapidapi.com"
     }
-  }
-
-  return res.status(503).json({ success: false, message: "Koi bhi API kaam nahi kar rahi. Thodi der baad try karo." });
-}
-
-// ── Cobalt ────────────────────────────────────────────────────────────────────
-async function tryCobalt(url) {
-  const res = await fetch("https://api.cobalt.tools/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-    body: JSON.stringify({ url, videoQuality: "720", filenameStyle: "basic" }),
   });
+
   const data = await res.json();
+  console.log("API Response:", JSON.stringify(data));
 
-  if (data.status === "stream" || data.status === "redirect") {
-    return { title: "Video", platform: detectPlatform(url), videoUrl: data.url, thumbnail: "" };
-  }
-  if (data.status === "picker" && data.picker?.length > 0) {
-    return {
-      title: "Video", platform: detectPlatform(url),
-      videoUrl: data.picker[0].url,
-      links: data.picker.map((p, i) => ({ url: p.url, quality: "Option " + (i + 1) })),
-      thumbnail: data.picker[0].thumb || "",
-    };
-  }
-  throw new Error("Cobalt: " + (data.error?.code || "no link"));
-}
+  if (!data) throw new Error("Empty response");
 
-// ── ytapi.me ──────────────────────────────────────────────────────────────────
-async function tryYtApi(url) {
-  const id = extractYTId(url);
-  if (!id) throw new Error("Not YouTube");
-  const res = await fetch(`https://ytapi.me/api/?videoid=${id}&format=json`);
-  const data = await res.json();
-  if (data?.url) {
-    return {
-      title: data.title || "YouTube Video", platform: "YouTube",
-      videoUrl: data.url,
-      thumbnail: data.thumbnail || `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
-    };
-  }
-  throw new Error("ytapi: no url");
-}
+  // Links collect karo
+  const links = [];
 
-// ── Fallback ──────────────────────────────────────────────────────────────────
-async function tryFallback(url) {
-  const id = extractYTId(url);
+  // Formats array
+  if (Array.isArray(data.formats)) {
+    data.formats.forEach(f => {
+      if (f.url) links.push({ url: f.url, quality: f.qualityLabel || f.quality || f.ext || "Download" });
+    });
+  }
+
+  // Direct video/audio
+  if (data.url)      links.push({ url: data.url,      quality: "Video Download" });
+  if (data.videoUrl) links.push({ url: data.videoUrl, quality: "Video Download" });
+  if (data.audioUrl) links.push({ url: data.audioUrl, quality: "Audio MP3" });
+
+  // medias / links array
+  if (Array.isArray(data.medias)) data.medias.forEach(m => { if (m.url) links.push({ url: m.url, quality: m.quality || "Download" }); });
+  if (Array.isArray(data.links))  data.links.forEach(l  => { if (l.url) links.push({ url: l.url,  quality: l.quality  || "Download" }); });
+
+  if (links.length === 0) throw new Error("No download links in response");
+
   return {
-    title: "Video", platform: detectPlatform(url),
-    videoUrl: `https://ssyoutube.com/en8/download?url=${encodeURIComponent(url)}`,
-    thumbnail: id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "",
+    title:     data.title     || data.videoTitle || "YouTube Video",
+    platform:  "YouTube",
+    thumbnail: data.thumbnail || data.thumb      || "",
+    duration:  data.duration  || "",
+    links,
+    videoUrl:  links[0].url,
   };
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function extractYTId(url) {
-  const m = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
-  return m ? m[1] : null;
-}
-
-function detectPlatform(url) {
-  if (/youtube\.com|youtu\.be/.test(url)) return "YouTube";
-  if (/instagram\.com/.test(url)) return "Instagram";
-  if (/tiktok\.com/.test(url)) return "TikTok";
-  if (/facebook\.com|fb\.watch/.test(url)) return "Facebook";
-  if (/twitter\.com|x\.com/.test(url)) return "Twitter/X";
-  return "Video";
 }
