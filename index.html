@@ -16,109 +16,81 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; overflow-x: hidden; }
     body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(200,240,62,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(200,240,62,0.03) 1px, transparent 1px); background-size: 48px 48px; pointer-events: none; z-index: 0; }
-    body::after { content: ''; position: fixed; top: -20%; left: 50%; transform: translateX(-50%); width: 800px; height: 500px; background: radial-gradient(ellipse, rgba(200,240,62,0.07) 0%, transparent 70%); pointer-events: none; z-index: 0; }
     .container { position: relative; z-index: 1; }
-    .marquee-track { display: flex; gap: 0; animation: marquee 18s linear infinite; width: max-content; }
-    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-    .url-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,240,62,0.12), inset 0 0 20px rgba(200,240,62,0.04); }
-    .btn-download { background: var(--accent); color: #08090a; font-family: 'Syne', sans-serif; font-weight: 800; letter-spacing: 0.08em; position: relative; overflow: hidden; transition: transform 0.15s, box-shadow 0.15s; }
-    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(200,240,62,0.35); }
-    .btn-download:disabled { background: var(--muted); color: var(--text-dim); cursor: not-allowed; transform: none; box-shadow: none; }
-    .platform-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-family: 'DM Mono', monospace; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text-dim); }
-    .result-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; animation: slideUp 0.4s forwards; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    .thumb-wrap { position: relative; overflow: hidden; }
-    .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 56px; height: 56px; background: rgba(200,240,62,0.15); backdrop-filter: blur(8px); border: 2px solid rgba(200,240,62,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .url-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,240,62,0.12); }
+    .btn-download { background: var(--accent); color: #08090a; font-family: 'Syne', sans-serif; font-weight: 800; transition: all 0.2s; }
+    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(200,240,62,0.3); }
+    .btn-download:disabled { background: var(--muted); color: var(--text-dim); cursor: not-allowed; }
+    .result-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-top: 2rem; }
     .loader { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(8,9,10,0.3); border-top-color: #08090a; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .progress-bar { height: 3px; background: var(--accent); border-radius: 999px; width: 0%; }
-    .toast { position: fixed; bottom: 32px; right: 32px; background: var(--card); border: 1px solid var(--accent); color: var(--accent); padding: 12px 20px; border-radius: 10px; z-index: 100; animation: toastIn 0.3s ease; }
-    @keyframes toastIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-    .dl-link-btn { display: block; width: 100%; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--accent2); font-size: 12px; margin-bottom: 8px; text-decoration: none; }
-    .error-box { background: rgba(240,62,62,0.07); border: 1px solid rgba(240,62,62,0.3); border-radius: 12px; padding: 16px; color: #f08080; }
+    .dl-link-btn { display: block; width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--accent2); margin-bottom: 8px; text-decoration: none; text-align: center; }
+    .dl-link-btn:hover { border-color: var(--accent2); background: rgba(62,240,200,0.05); }
   </style>
 </head>
 <body>
 
-<div class="w-full overflow-hidden border-b py-2" style="border-color:var(--border); background:rgba(200,240,62,0.04);">
-  <div class="marquee-track text-xs" style="color:var(--text-dim);">
-    <span class="px-8">▶ YOUTUBE</span><span class="px-8">▶ INSTAGRAM</span><span class="px-8">▶ TIKTOK</span><span class="px-8">▶ TWITTER / X</span><span class="px-8">▶ FACEBOOK</span><span class="px-8">▶ VIMEO</span>
-    <span class="px-8">▶ YOUTUBE</span><span class="px-8">▶ INSTAGRAM</span><span class="px-8">▶ TIKTOK</span><span class="px-8">▶ TWITTER / X</span><span class="px-8">▶ FACEBOOK</span><span class="px-8">▶ VIMEO</span>
-  </div>
-</div>
-
 <div class="container max-w-2xl mx-auto px-4 py-12">
   <div class="text-center mb-12">
     <h1 class="text-5xl font-black mb-3" style="font-family:'Syne',sans-serif;">Vid<span style="color:var(--accent);">Snatch</span></h1>
-    <p class="text-sm" style="color:var(--text-dim);">Paste any social media URL → download in seconds</p>
+    <p class="text-sm text-gray-500">YouTube, TikTok, Instagram Downloader</p>
   </div>
 
   <div class="rounded-xl p-6 mb-6" style="background:var(--card); border: 1px solid var(--border);">
-    <label class="block text-xs mb-2" style="color:var(--text-dim);">VIDEO URL</label>
     <div class="flex gap-3">
-      <input id="urlInput" type="url" placeholder="Paste link here..." class="url-input flex-1 px-4 py-3 rounded-xl text-sm" style="background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text);" oninput="handleInput(this.value)" />
+      <input id="urlInput" type="url" placeholder="Paste link here..." class="url-input flex-1 px-4 py-3 rounded-xl text-sm" style="background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text);" />
       <button id="fetchBtn" onclick="handleFetch()" class="btn-download px-6 py-3 rounded-xl text-sm font-bold">
         <span id="btnText">FETCH</span>
       </button>
     </div>
-    <div id="platformDetect" class="mt-3 hidden"><span class="platform-badge" id="platformName"></span></div>
-    <div id="progressWrap" class="mt-4 hidden"><div class="w-full bg-gray-800 rounded-full h-1"><div id="progressBar" class="progress-bar h-1"></div></div></div>
+    <div id="progressWrap" class="mt-4 hidden text-center text-xs text-gray-500">Fetching video data...</div>
   </div>
 
   <div id="resultSection" class="hidden result-card">
-    <div class="thumb-wrap"><img id="thumbImg" src="" class="w-full object-cover" style="max-height:280px;"/><div class="play-icon">▶</div></div>
+    <img id="thumbImg" src="" class="w-full object-cover" style="max-height:300px;"/>
     <div class="p-6">
-      <h2 id="videoTitle" class="text-lg font-bold mb-4"></h2>
+      <h2 id="videoTitle" class="text-lg font-bold mb-4 text-white"></h2>
       <div id="downloadLinks"></div>
     </div>
   </div>
 
-  <div id="errorSection" class="hidden mt-4"><div class="error-box"><div id="errorMsg"></div></div></div>
-
-  <div class="text-center mt-12 text-xs" style="color:var(--muted);">VidSnatch · Powered by RapidAPI</div>
+  <div id="errorSection" class="hidden mt-4 p-4 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm text-center">
+    <div id="errorMsg"></div>
+  </div>
 </div>
-
-<div id="toastContainer"></div>
 
 <script>
 const API_KEY = "8573c3a5a4msh17b0edce5836123p15a406jsnf2cf5e558202";
-
-function handleInput(val) {
-    const btn = document.getElementById('fetchBtn');
-    const detect = document.getElementById('platformDetect');
-    const platformName = document.getElementById('platformName');
-    if (val.length > 5) {
-        detect.classList.remove('hidden');
-        platformName.textContent = val.includes('youtube') ? '● YouTube Detected' : '● Social Media Detected';
-    } else {
-        detect.classList.add('hidden');
-    }
-}
 
 async function handleFetch() {
     const input = document.getElementById('urlInput');
     const btnText = document.getElementById('btnText');
     const fetchBtn = document.getElementById('fetchBtn');
-    const progressWrap = document.getElementById('progressWrap');
-    const progressBar = document.getElementById('progressBar');
     const resultSection = document.getElementById('resultSection');
     const errorSection = document.getElementById('errorSection');
+    const progressWrap = document.getElementById('progressWrap');
 
-    if (!input.value) return;
+    if (!input.value) {
+        alert("Please paste a URL first!");
+        return;
+    }
 
+    // UI Reset
     resultSection.classList.add('hidden');
     errorSection.classList.add('hidden');
     progressWrap.classList.remove('hidden');
-    progressBar.style.width = '70%';
-    btnText.innerHTML = <div class="loader"></div>;
+    btnText.innerHTML = '<div class="loader"></div>';
     fetchBtn.disabled = true;
 
     try {
         let response;
-        const isYouTube = input.value.includes('youtube.com') || input.value.includes('youtu.be') || input.value.includes('shorts');
+        const urlValue = input.value.trim();
+        const isYouTube = urlValue.includes('youtube.com') || urlValue.includes('youtu.be') || urlValue.includes('shorts');
 
         if (isYouTube) {
-            response = await fetch(https://youtube-media-downloader.p.rapidapi.com/v2/video/details?url=${encodeURIComponent(input.value)}, {
+            // YouTube Engine
+            const ytUrl = https://youtube-media-downloader.p.rapidapi.com/v2/video/details?url=${encodeURIComponent(urlValue)};
+            response = await fetch(ytUrl, {
                 method: "GET",
                 headers: {
                     "x-rapidapi-key": API_KEY,
@@ -126,6 +98,7 @@ async function handleFetch() {
                 }
             });
         } else {
+            // Social Media Engine
             response = await fetch("https://social-download-all-in-one.p.rapidapi.com/v1/social/autolink", {
                 method: "POST",
                 headers: {
@@ -133,65 +106,60 @@ async function handleFetch() {
                     "x-rapidapi-key": API_KEY,
                     "x-rapidapi-host": "social-download-all-in-one.p.rapidapi.com"
                 },
-                body: JSON.stringify({ url: input.value })
+                body: JSON.stringify({ url: urlValue })
             });
         }
 
         const data = await response.json();
-        if (!response.ok) throw new Error("API Error: " + (data.message || "Failed"));
+        
+        if (!response.ok) throw new Error(data.message || "Failed to fetch data");
 
         renderResult(data, isYouTube);
-        progressBar.style.width = '100%';
+
     } catch (err) {
-        document.getElementById('errorMsg').textContent = err.message;
+        document.getElementById('errorMsg').textContent = "Error: " + err.message;
         errorSection.classList.remove('hidden');
     } finally {
         progressWrap.classList.add('hidden');
         btnText.textContent = 'FETCH';
         fetchBtn.disabled = false;
-        progressBar.style.width = '0%';
     }
 }
 
 function renderResult(data, isYouTube) {
     const section = document.getElementById('resultSection');
     const linksContainer = document.getElementById('downloadLinks');
+    const thumbImg = document.getElementById('thumbImg');
+    const videoTitle = document.getElementById('videoTitle');
+    
     linksContainer.innerHTML = '';
+    videoTitle.textContent = data.title || "Video Found";
+    thumbImg.src = data.thumbnail || data.picture || "https://via.placeholder.com/600x300?text=No+Thumbnail";
 
-    document.getElementById('videoTitle').textContent = data.title || "Video Found";
-    document.getElementById('thumbImg').src = data.thumbnail || data.picture || "";
-
-    // YouTube aur Social dono ke links nikalne ka logic
     let links = [];
     if (isYouTube && data.videos && data.videos.items) {
         links = data.videos.items.map(v => ({ url: v.url, quality: v.quality || 'HD' }));
-    } else {
-        links = data.medias || data.links || [];
+    } else if (data.medias) {
+        links = data.medias.map(m => ({ url: m.url, quality: m.quality || 'Download' }));
     }
 
     if (links.length === 0) {
-        linksContainer.innerHTML = "<p class='text-sm text-gray-500'>No direct links found. Try another URL.</p>";
+        linksContainer.innerHTML = "<p class='text-center text-gray-400'>No download links found.</p>";
     } else {
         links.forEach(link => {
             const a = document.createElement('a');
-            a.href = link.url || link.link;
+            a.href = link.url;
             a.target = "_blank";
             a.className = "dl-link-btn";
-            a.innerHTML = ⬇ Download ${link.quality || 'Video'} <span class="float-right">↗</span>;
+            a.innerHTML = ⬇ Download ${link.quality};
             linksContainer.appendChild(a);
         });
     }
+
     section.classList.remove('hidden');
 }
 
-function showToast(msg) {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = msg;
-    document.getElementById('toastContainer').appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
-
+// Enter key support
 document.getElementById('urlInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleFetch();
 });
