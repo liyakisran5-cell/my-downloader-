@@ -21,7 +21,7 @@
     .tagline{color:var(--muted);font-size:0.72rem;margin-top:8px;letter-spacing:2px;text-transform:uppercase}
     .badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:16px}
     .badge{font-size:0.62rem;padding:3px 10px;border-radius:999px;border:1px solid var(--border);color:var(--muted);letter-spacing:1px}
-    .badge.yt{border-color:#ff4444;color:#ff4444}.badge.ig{border-color:#e1306c;color:#e1306c}
+    .badge.ig{border-color:#e1306c;color:#e1306c}
     .badge.tt{border-color:#69c9d0;color:#69c9d0}.badge.fb{border-color:#1877f2;color:#1877f2}
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px}
     .input-row{display:flex;gap:10px}
@@ -63,7 +63,6 @@
     <div class="logo">Vid<span>Snatch</span></div>
     <div class="tagline">Download Any Video · Anywhere</div>
     <div class="badges">
-      <span class="badge yt">YouTube</span>
       <span class="badge ig">Instagram</span>
       <span class="badge tt">TikTok</span>
       <span class="badge fb">Facebook</span>
@@ -132,7 +131,6 @@
     }
     hideError(); hideResult(); setLoading(true);
     try {
-      // /api/proxy → Netlify function → batgpt API
       var res = await fetch("/api/proxy?url=" + encodeURIComponent(url));
       if (!res.ok) throw new Error("Server error: " + res.status);
       var data = await res.json();
@@ -192,4 +190,3 @@
 </script>
 </body>
 </html>
-
