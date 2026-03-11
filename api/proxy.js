@@ -30,6 +30,8 @@ async function tryYoutubeDownloader(url) {
   console.log("API Response:", JSON.stringify(data));
 
   if (!data) throw new Error("Empty response");
+  // DEBUG - temporary
+  throw new Error("RAW: " + JSON.stringify(data).substring(0, 500));
 
   // Links collect karo
   const links = [];
