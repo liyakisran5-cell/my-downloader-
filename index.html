@@ -185,7 +185,7 @@
 <script>
   // ── CONFIG — Apni nayi API key yahan daalo ──
   const API_KEY = "8573c3a5a4msh17b0edce5836123p15a406jsnf2cf5e558202";
-  const API_HOST = "social-media-video-downloader.p.rapidapi.com";
+  const API_HOST = "social-download-all-in-one.p.rapidapi.com";
 
   const platforms = [
     { name: 'YouTube',    pattern: /youtube\.com|youtu\.be/,  emoji: '▶️' },
@@ -238,19 +238,22 @@
     btnText.innerHTML = `<div class="loader"></div>`;
     fetchBtn.disabled = true;
 
-    try {
-      const response = await fetch(
-        `https://${API_HOST}/smvd/get/all?url=${encodeURIComponent(input.value)}`,
-        {
-          method: "GET",
-          headers: {
+   try {
+    const response = await fetch("https://social-download-all-in-one.p.rapidapi.com/v1/social/autolink", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
             "x-rapidapi-key": API_KEY,
-            "x-rapidapi-host": API_HOST
-          }
-        }
-      );
+            "x-rapidapi-host": "social-download-all-in-one.p.rapidapi.com"
+        },
+        body: JSON.stringify({
+            url: input.value
+        })
+    });
 
-      const data = await response.json();
+    const data = await response.json();
+    
+    // Baqi ka code (if response.ok...) wahi rehne dein jo pehle se hai
 
       if (!response.ok || data.error) {
         throw new Error(data.message || data.error || "Could not fetch video. Check the URL.");
@@ -358,3 +361,4 @@
 </script>
 </body>
 </html>
+
