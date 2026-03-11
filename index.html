@@ -10,159 +10,116 @@
   <style>
     :root {
       --bg: #08090a; --card: #111214; --border: #1e2025;
-      --accent: #c8f03e; --accent2: #3ef0c8; --muted: #3a3d44;
-      --text: #e8eaf0; --text-dim: #6b7280;
+      --accent: #c8f03e; --accent2: #3ef0c8; --text: #e8eaf0;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
-    .container { position: relative; z-index: 1; }
-    .url-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,240,62,0.12); }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; }
     .btn-download { background: var(--accent); color: #08090a; font-family: 'Syne', sans-serif; font-weight: 800; transition: all 0.2s; }
     .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(200,240,62,0.3); }
-    .btn-download:disabled { background: var(--muted); color: var(--text-dim); cursor: not-allowed; }
-    .result-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-top: 2rem; }
     .loader { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(8,9,10,0.3); border-top-color: #08090a; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .dl-link-btn { display: block; width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--accent2); margin-bottom: 8px; text-decoration: none; text-align: center; }
   </style>
 </head>
-<body>
+<body class="px-4 py-12">
 
-<div class="container max-w-2xl mx-auto px-4 py-12">
+<div class="max-w-2xl mx-auto">
   <div class="text-center mb-12">
     <h1 class="text-5xl font-black mb-3" style="font-family:'Syne',sans-serif;">Vid<span style="color:var(--accent);">Snatch</span></h1>
-    <p class="text-sm text-gray-500">YouTube & Social Media Downloader</p>
+    <p class="text-sm text-gray-500">Fast Video Downloader</p>
   </div>
 
   <div class="rounded-xl p-6 mb-6" style="background:var(--card); border: 1px solid var(--border);">
     <div class="flex gap-3">
-      <input id="urlInput" type="url" placeholder="Paste link here..." class="url-input flex-1 px-4 py-3 rounded-xl text-sm" style="background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text);" />
-      <button id="fetchBtn" onclick="handleFetch()" class="btn-download px-6 py-3 rounded-xl text-sm font-bold">
+      <input id="urlInput" type="url" placeholder="Paste link here..." class="flex-1 px-4 py-3 rounded-xl text-sm outline-none" style="background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text);" />
+      <button id="fetchBtn" onclick="handleFetch()" class="btn-download px-6 py-3 rounded-xl text-sm">
         <span id="btnText">FETCH</span>
       </button>
     </div>
-    <div id="progressWrap" class="mt-4 hidden text-center text-xs text-gray-500">Fetching data...</div>
+    <div id="progress" class="mt-4 hidden text-center text-xs text-gray-500">Fetching video...</div>
   </div>
 
-  <div id="resultSection" class="hidden result-card">
-    <img id="thumbImg" src="" class="w-full object-cover" style="max-height:300px;"/>
+  <div id="result" class="hidden rounded-2xl overflow-hidden border border-gray-800 bg-gray-900/50">
+    <img id="thumb" src="" class="w-full object-cover h-64" />
     <div class="p-6">
-      <h2 id="videoTitle" class="text-lg font-bold mb-4 text-white"></h2>
-      <div id="downloadLinks"></div>
+        <h2 id="title" class="font-bold mb-4"></h2>
+        <div id="links"></div>
     </div>
   </div>
 
-  <div id="errorSection" class="hidden mt-4 p-4 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm text-center">
-    <div id="errorMsg"></div>
-  </div>
+  <div id="error" class="hidden mt-4 p-4 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm text-center"></div>
 </div>
 
 <script>
-// --- CONFIG ---
 const API_KEY = "8573c3a5a4msh17b0edce5836123p15a406jsnf2cf5e558202";
 
 async function handleFetch() {
     const input = document.getElementById('urlInput');
     const btnText = document.getElementById('btnText');
-    const fetchBtn = document.getElementById('fetchBtn');
-    const resultSection = document.getElementById('resultSection');
-    const errorSection = document.getElementById('errorSection');
-    const progressWrap = document.getElementById('progressWrap');
+    const result = document.getElementById('result');
+    const error = document.getElementById('error');
+    const progress = document.getElementById('progress');
 
-    if (!input.value) {
-        alert("Please paste a URL first!");
-        return;
-    }
+    if (!input.value) return alert("Paste link first!");
 
-    // Reset UI
-    resultSection.classList.add('hidden');
-    errorSection.classList.add('hidden');
-    progressWrap.classList.remove('hidden');
+    // UI State
+    result.classList.add('hidden');
+    error.classList.add('hidden');
+    progress.classList.remove('hidden');
     btnText.innerHTML = '<div class="loader"></div>';
-    fetchBtn.disabled = true;
 
     try {
-        let response;
         const urlValue = input.value.trim();
-        const isYouTube = urlValue.includes('youtube.com') || urlValue.includes('youtu.be') || urlValue.includes('shorts');
-
-        if (isYouTube) {
-            const ytUrl = https://youtube-media-downloader.p.rapidapi.com/v2/video/details?url=${encodeURIComponent(urlValue)};
-            response = await fetch(ytUrl, {
-                method: "GET",
-                headers: {
-                    "x-rapidapi-key": API_KEY,
-                    "x-rapidapi-host": "youtube-media-downloader.p.rapidapi.com"
-                }
-            });
+        const isYT = urlValue.includes('youtube.com') || urlValue.includes('youtu.be') || urlValue.includes('shorts');
+        
+        let apiUri, host;
+        if(isYT) {
+            apiUri = https://youtube-media-downloader.p.rapidapi.com/v2/video/details?url=${encodeURIComponent(urlValue)};
+            host = "youtube-media-downloader.p.rapidapi.com";
         } else {
-            response = await fetch("https://social-download-all-in-one.p.rapidapi.com/v1/social/autolink", {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                    "x-rapidapi-key": API_KEY,
-                    "x-rapidapi-host": "social-download-all-in-one.p.rapidapi.com"
-                },
-                body: JSON.stringify({ url: urlValue })
-            });
+            apiUri = "https://social-download-all-in-one.p.rapidapi.com/v1/social/autolink";
+            host = "social-download-all-in-one.p.rapidapi.com";
         }
 
-        const data = await response.json();
-        
-        if (!response.ok) throw new Error(data.message || "Failed to fetch data");
-
-        renderResult(data, isYouTube);
-
-    } catch (err) {
-        document.getElementById('errorMsg').textContent = "Error: " + err.message;
-        errorSection.classList.remove('hidden');
-    } finally {
-        progressWrap.classList.add('hidden');
-        btnText.textContent = 'FETCH';
-        fetchBtn.disabled = false;
-    }
-}
-
-function renderResult(data, isYouTube) {
-    const section = document.getElementById('resultSection');
-    const linksContainer = document.getElementById('downloadLinks');
-    const thumbImg = document.getElementById('thumbImg');
-    const videoTitle = document.getElementById('videoTitle');
-    
-    linksContainer.innerHTML = '';
-    videoTitle.textContent = data.title || "Video Found";
-    thumbImg.src = data.thumbnail || data.picture || "https://via.placeholder.com/600x300?text=No+Thumbnail";
-
-    let links = [];
-    if (isYouTube && data.videos && data.videos.items) {
-        links = data.videos.items.map(v => ({ url: v.url, quality: v.quality || 'Download' }));
-    } else if (data.medias) {
-        links = data.medias.map(m => ({ url: m.url, quality: m.quality || 'Download' }));
-    } else if (data.links) {
-        links = data.links.map(l => ({ url: l.url || l.link, quality: l.quality || 'Link' }));
-    }
-
-    if (links.length === 0) {
-        linksContainer.innerHTML = "<p class='text-center text-gray-400'>No download links found.</p>";
-    } else {
-        links.forEach(link => {
-            if (link.url) {
-                const a = document.createElement('a');
-                a.href = link.url;
-                a.target = "_blank";
-                a.className = "dl-link-btn";
-                a.innerHTML = ⬇ Download ${link.quality};
-                linksContainer.appendChild(a);
+        const options = {
+            method: isYT ? "GET" : "POST",
+            headers: {
+                "x-rapidapi-key": API_KEY,
+                "x-rapidapi-host": host,
+                "content-type": "application/json"
             }
+        };
+        if(!isYT) options.body = JSON.stringify({ url: urlValue });
+
+        const res = await fetch(apiUri, options);
+        const data = await res.json();
+
+        if(!res.ok) throw new Error("API Error");
+
+        // Render result
+        document.getElementById('title').textContent = data.title || "Video Found";
+        document.getElementById('thumb').src = data.thumbnail || data.picture || "";
+        
+        const linksDiv = document.getElementById('links');
+        linksDiv.innerHTML = '';
+        
+        let medias = isYT ? (data.videos?.items || []) : (data.medias || []);
+        medias.forEach(m => {
+            const a = document.createElement('a');
+            a.href = m.url;
+            a.target = "_blank";
+            a.className = "block w-full p-3 mb-2 bg-white/5 border border-white/10 rounded-lg text-center text-cyan-400";
+            a.innerHTML = "⬇ Download " + (m.quality || "Video");
+            linksDiv.appendChild(a);
         });
+
+        result.classList.remove('hidden');
+    } catch (err) {
+        error.textContent = "Error: " + err.message;
+        error.classList.remove('hidden');
+    } finally {
+        progress.classList.add('hidden');
+        btnText.textContent = "FETCH";
     }
-
-    section.classList.remove('hidden');
 }
-
-document.getElementById('urlInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleFetch();
-});
 </script>
 </body>
 </html>
